@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .white-key {
+            border: 1px solid black;
+            width: 100px;
+            height: 300px;
+            float: left;
+        }
+        
+        .black-key {
+            background-color: black;
+            width: 50px;
+            height: 150px;
+            left: 75px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+
+      
+        <div>
+            <input type="radio" id="sine" name="waveform" value="sine">
+            <label for="sine">Sine</label>
+        </div>
+        <div>
+            <input type="radio" id="sawtooth" name="waveform" value="sawtooth">
+            <label for="sawtooth">Sawtooth</label>
+        </div>
+        <div>
+            <input type="radio" id="square" name="waveform" value="square">
+            <label for="square">square</label>
+        </div>
+        <div id="keyboard">
+            <div class="key white-key">
+                <div class="key black-key"></div>
+            </div>
+            <div class="key white-key">
+                <div class="key black-key"></div>
+            </div>
+            <div class="key white-key"></div>
+            <div class="key white-key">
+                <div class="key black-key"></div>
+            </div>
+            <div class="key white-key">
+                <div class="key black-key"></div>
+            </div>
+            <div class="key white-key">
+                <div class="key black-key"></div>
+            </div>
+            <div class="key white-key"></div>
+            <div class="key white-key"></div>
+        </div>
+
+    <script>
+        
+
+        const audioCtx = new AudioContext();
+        const gain = audioCtx.createGain();
+
+        gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+        gain.connect(audioCtx.destination);
+
+        const defaultWaveform = document.querySelector('input[name=waveform]:checked').value;
+
+        class Key {
+            constructor(note, frequency, key) {
+                this.note = note;
+                this.frequency = frequency;
+                this.key = key;
+                this.type = defaultWaveform;
+                this.osc = audioCtx.createOscillator();
+            }
+
+            play() {
+                this.osc = audioCtx.createOscillator();
+                this.osc.frequency.setValueAtTime(this.frequency, audioCtx.currentTime);
+                this.osc.type = this.type;
+                this.osc.connect(gain);
+
+                this.osc.start(audioCtx.currentTime);
+            }
+
+            pause() {
+                this.osc.stop(audioCtx.currentTimezc);
+            }
+
+            changeType(type) {
+                this.type = type;
+                this.osc.type = type;
+            }
+        }
+
+        const presets = [
+            {
+                note: 'C',
+                frequency: 261.63,
+                key: 'z'
+            },
+            {
+                note: 'C#',
+                frequency: 277.18,
+                key: 's'
+            },
+            {
+                note: 'D',
+                frequency: 293.66,
+                key: 'x'
+            },
+            {
+                note: 'D#',
+                frequency: 311.13,
+                key: 'd'
+            },
+            {
+                note: 'E',
+                frequency: 329.63,
+                key: 'c'
+            },
+            {
+                note: 'F',
+                frequency: 349.23,
+                key: 'v'
+            },
+            {
+                note: 'F#',
+                frequency: 369.99,
+                key: 'g'
+            },
+            {
+                note: 'G',
+                frequency: 392,
+                key: 'b'
+            },
+            {
+                note: 'G#',
+                frequency: 415.3,
+                key: 'h'
+            },
+            {
+                note: 'A',
+                frequency: 440,
+                key: 'n'
+            },
+            {
+                note: 'A#',
+                frequency: 466.16,
+                key: 'j'
+            },
+            {
+                note: 'B',
+                frequency: 493.88,
+                key: 'm'
+            },
+            {
+                note: 'C',
+                frequency: 523.25,
+                key: ','
+            }
+        ];
+
+        const keys = presets.map(preset => new Key(preset.note, preset.frequency, preset.key)); 
+
+        document.addEventListener('keydown', (e) => {
+
+            if(e.repeat) return;
+            
+            note = keys.find(key => key.key == e.key);
+            note.play();
+            
+        });
+
+        document.addEventListener('keyup', (e) => {
+
+            const note = keys.find(key => key.key == e.key);
+            note.pause();
+
+        });
+
+        const keyBtns = document.querySelectorAll('.key');
+        const keyboard = document.getElementById('keyboard');
+
+        keyBtns.forEach((keyBtn, i) => {
+            keyBtn.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                keys[i].play();
+            });
+
+            keyBtn.addEventListener('mouseup', () => {
+                keys[i].pause();
+            });
+        });
+
+        const waveformRadio = document.querySelectorAll('input[name="waveform"]');
+
+        waveformRadio.forEach(radioBtn => {
+            radioBtn.addEventListener('change', e => {
+                const wavetype = e.target.value;
+                keys.forEach(key => {
+                    key.changeType(wavetype);
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
